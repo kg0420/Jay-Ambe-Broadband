@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block head %}
+<title>Jay Ambe Broadband Service</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://kit.fontawesome.com/a2d9d6d3b6.js" crossorigin="anonymous"></script>
+
+<style>
+  /* 🌈 Smooth Animated Gradient Background */
+  .animated-bg {
+    background: linear-gradient(-45deg, #0f172a, #111827, #1e293b, #0a0f1c);
+    background-size: 400% 400%;
+    animation: gradientShift 12s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0% {
+      background-position: 0% 50%;
+    }
+
+    50% {
+      background-position: 100% 50%;
+    }
+
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* 🌟 Fade animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(25px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .fade-up {
+    animation: fadeInUp 1s ease-in-out;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- 🌌 Hero Banner -->
+<section id="home"
+  class="animated-bg flex justify-center items-center mt-4 px-4 py-10 rounded-2xl shadow-2xl text-center text-white">
+  <div class="fade-up">
+    <img
+      src="static/banner2.jpg"
+      alt="Broadband Banner"
+      class="w-full max-h-[420px] object-contain rounded-xl border-4 border-cyan-500/40 shadow-[0_0_25px_rgba(34,211,238,0.4)] hover:scale-[1.02] transition-transform duration-500"
+    />
+    <h1 class="text-3xl md:text-5xl font-extrabold mt-6 text-cyan-300">Welcome to Jay Ambe Broadband</h1>
+    <p class="text-gray-300 mt-3 max-w-2xl mx-auto">
+      Experience blazing-fast internet, zero installation cost, and same-day activation.
+    </p>
+  </div>
+</section>
+
+<!-- 📄 Documents Section -->
+<section id="about" class="py-12 px-6 bg-slate-900/80 backdrop-blur-md text-gray-200">
+  <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 text-cyan-400">
+    <i class="fa-solid fa-file"></i> Documents Required
+  </h3>
+  <ul class="space-y-3 text-lg">
+    <li class="flex items-center"><i class="fa-solid fa-id-badge mr-3 text-cyan-400"></i>Photo ID Proof</li>
+    <li class="flex items-center"><i class="fa-solid fa-location-dot mr-3 text-cyan-400"></i>Address Proof</li>
+    <li class="flex items-center"><i class="fa-solid fa-camera mr-3 text-cyan-400"></i>Passport Size Photo</li>
+  </ul>
+</section>
+
+<!-- ❓ FAQ Section -->
+<section id="faqs" class="py-12 px-6 bg-gradient-to-b from-slate-900 via-[#0f172a] to-black border-t-4 border-cyan-600">
+  <h2 class="text-center text-3xl md:text-4xl font-bold mb-8 text-cyan-400">Frequently Asked Questions</h2>
+  <div class="space-y-6 text-gray-300 max-w-3xl mx-auto fade-up">
+    <div>
+      <p class="font-semibold"><i class="fa-solid fa-arrow-right-long mr-2 text-cyan-400"></i>Best broadband plans for home?</p>
+      <p class="ml-6 border-l-4 border-cyan-600 pl-3 text-gray-400">
+        We offer affordable, high-speed broadband plans for every household.
+      </p>
+    </div>
+    <div>
+      <p class="font-semibold"><i class="fa-solid fa-arrow-right-long mr-2 text-cyan-400"></i>How to get a new connection?</p>
+      <p class="ml-6 border-l-4 border-cyan-600 pl-3 text-gray-400">
+        Visit our plans page or contact customer support — same-day installation guaranteed.
+      </p>
+    </div>
+    <div>
+      <p class="font-semibold"><i class="fa-solid fa-arrow-right-long mr-2 text-cyan-400"></i>Do you offer free installation?</p>
+      <p class="ml-6 border-l-4 border-cyan-600 pl-3 text-gray-400">
+        Yes, installation is completely free with all plans.
+      </p>
+    </div>
+    <div>
+      <p class="font-semibold"><i class="fa-solid fa-arrow-right-long mr-2 text-cyan-400"></i>Can renters apply?</p>
+      <p class="ml-6 border-l-4 border-cyan-600 pl-3 text-gray-400">
+        Absolutely! Flexible, no-contract options available for tenants.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- 🚀 Why Choose Us -->
+<section id="choice" class="py-16 animated-bg">
+  <h2 class="text-center text-4xl font-bold mb-12 text-cyan-300 flex items-center justify-center gap-3 fade-up">
+    <i class="fa-solid fa-wifi text-cyan-400"></i> Why Choose Us?
+  </h2>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6 md:px-12 fade-up">
+    {% for card in [
+      {"icon":"fa-sliders","title":"No Installation Charges","desc":"Zero setup cost with instant activation."},
+      {"icon":"fa-bolt","title":"SuperFast Internet","desc":"Enjoy high-speed uninterrupted connectivity."},
+      {"icon":"fa-headset","title":"Same-Day Support","desc":"Local team ensures quick problem resolution."},
+      {"icon":"fa-tags","title":"Affordable Plans","desc":"Premium broadband at budget-friendly prices."}
+    ] %}
+    <div
+      class="bg-slate-800/70 border border-cyan-600 rounded-2xl shadow-lg p-6 text-center backdrop-blur-sm hover:scale-105 hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all duration-300">
+      <i class="fa-solid {{ card.icon }} text-4xl mb-4 text-cyan-400"></i>
+      <h3 class="font-semibold text-lg text-white">{{ card.title }}</h3>
+      <p class="text-gray-400 text-sm mt-2">{{ card.desc }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+{% endblock %}
