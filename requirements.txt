@@ -1,2 +1,3 @@
-Flask==2.3.5
+Flask
 email-validator==2.1.0
+gunicorn
