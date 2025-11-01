@@ -108,8 +108,8 @@
     durationContainer.innerHTML = "";
 
     for (const [duration, price] of Object.entries(planPrices[currentPlan])) {
-      const upiId = "kg2043139-1@okicici";
-      const name = "Krish Gupta";
+      const upiId = "bajajpay.6879729.01561666@indus";
+      const name = "Vijay Gupta";
       const note = encodeURIComponent(`${currentPlan} - ${duration} Plan`);
       const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${price}&cu=INR&tn=${note}`;
 
@@ -171,3 +171,4 @@
   }
 </style>
 {% endblock %}
+
