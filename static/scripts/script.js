@@ -110,4 +110,41 @@ function verifyTransaction(txnId, planName, amount) {
   }
 }
 
+document.getElementById("payButton").addEventListener("click", () => {
+  const name = document.getElementById("name").value.trim();
+  const amount = document.getElementById("amount").value.trim();
 
+  if (!name || !amount) {
+    alert("Please enter your name and amount.");
+    return;
+  }
+
+  const upiId = "jayambe@ybl"; // Your GPay UPI ID
+  const txnId = "TXN" + Date.now();
+
+  // Create UPI payment URL (works for GPay, PhonePe, Paytm, etc.)
+  const upiUrl = `upi://pay?pa=${upiId}&pn=Jay%20Ambe%20Broadband&am=${amount}&cu=INR&tn=Broadband%20Bill%20Payment`;
+
+  // Open GPay / UPI app
+  window.location.href = upiUrl;
+
+  // After payment, generate receipt manually (user confirmation)
+  setTimeout(() => {
+    if (confirm("Did you complete the payment?")) {
+      fetch("/generate_receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, amount, upi_id: upiId, txn_id: txnId }),
+      })
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("status").innerText =
+            "✅ Payment confirmed! Downloading your receipt...";
+          window.location.href = `/download_receipt/${data.file}`;
+        })
+        .catch(err => alert("Error generating receipt: " + err));
+    } else {
+      alert("Payment not confirmed. Please try again.");
+    }
+  }, 5000);
+});
