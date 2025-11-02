@@ -1,9 +1,7 @@
-from flask import Flask, render_template
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, send_file, jsonify
+from io import BytesIO
 from datetime import datetime
-from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-import io
 
 app = Flask(__name__)
 
@@ -51,3 +49,4 @@ def generate_receipt():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
