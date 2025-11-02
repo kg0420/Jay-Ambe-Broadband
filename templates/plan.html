@@ -409,10 +409,8 @@
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-/* Initialize animations */
 AOS.init({ once: true, duration: 800, offset: 100 });
 
-/* Plan pricing data */
 const planPrices = {
   "20 Mbps": { "1 Month": 400, "3 Month": 1150, "6 Month": 2300, "Yearly": 4600 },
   "40 Mbps": { "1 Month": 450, "3 Month": 1300, "6 Month": 2600, "Yearly": 5200 },
@@ -422,18 +420,15 @@ const planPrices = {
   "150 Mbps": { "1 Month": 900, "3 Month": 2600, "6 Month": 5200, "Yearly": 10400 },
 };
 
-/* Detect mobile device */
 function isMobile() {
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-/* OTT icon hover animation */
-document.querySelectorAll(".ott-item").forEach(item => {
-  item.addEventListener("mouseenter", () => item.classList.add("animate-bounce-once"));
-  item.addEventListener("mouseleave", () => item.classList.remove("animate-bounce-once"));
+document.querySelectorAll('.ott-item').forEach(item => {
+  item.addEventListener('mouseenter', () => item.classList.add('animate-bounce-once'));
+  item.addEventListener('mouseleave', () => item.classList.remove('animate-bounce-once'));
 });
 
-/* Toggle monthly plan dropdowns */
 function togglePlan(header) {
   const table = header.nextElementSibling;
   const icon = header.querySelector("i");
@@ -441,7 +436,7 @@ function togglePlan(header) {
   icon.classList.toggle("rotate-180");
 }
 
-/* Payment modal logic */
+// ✅ Improved Payment Handler
 function payNow(amount, planName) {
   const modal = document.getElementById("paymentModal");
   const title = document.getElementById("selectedPlan");
@@ -457,21 +452,26 @@ function payNow(amount, planName) {
   const upiId = "vijaytikona.in@oksbi";
   const name = "Vijay Gupta";
   const note = encodeURIComponent(planName);
+
   const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(name)}&am=${encodeURIComponent(amount)}&cu=INR&tn=${note}`;
+  const intentLink = `intent://pay?pa=${upiId}&pn=${name}&am=${amount}&cu=INR&tn=${note}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
 
   const btn = document.createElement("button");
   btn.textContent = `Pay ₹${amount}`;
-  btn.className =
-    "block w-full bg-[#6f2232] text-white py-2 rounded-xl hover:bg-[#c3073f] hover:scale-105 transition-all duration-300";
+  btn.className = "block w-full bg-[#6f2232] text-white py-2 rounded-xl hover:bg-[#c3073f] hover:scale-105 transition-all duration-300";
 
   btn.addEventListener("click", () => {
     if (isMobile()) {
-      // Direct UPI payment open for mobile users
       try {
-        window.location.href = upiLink;
+        // Android devices prefer intent://
+        if (navigator.userAgent.includes("Android")) {
+          window.location.href = intentLink;
+        } else {
+          window.location.href = upiLink;
+        }
 
-        // Wait for user to come back to tab (after UPI app)
-        const handleReturn = () => {
+        // Wait for user to return to browser
+        document.addEventListener("visibilitychange", function handleReturn() {
           if (document.visibilityState === "visible") {
             document.removeEventListener("visibilitychange", handleReturn);
             setTimeout(() => {
@@ -481,15 +481,14 @@ function payNow(amount, planName) {
               } else {
                 alert("❌ Receipt generation cancelled. No transaction ID provided.");
               }
-            }, 800);
+            }, 1500);
           }
-        };
-        document.addEventListener("visibilitychange", handleReturn);
-      } catch (err) {
-        alert("⚠️ Unable to open UPI app. Please try scanning the QR instead.");
+        });
+      } catch (e) {
+        alert("⚠️ Payment app could not be opened. Please try again or use QR scan.");
       }
     } else {
-      // Desktop fallback → generate and show QR
+      // Desktop fallback
       qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
       qrSection.classList.remove("hidden");
     }
@@ -498,12 +497,10 @@ function payNow(amount, planName) {
   durationContainer.appendChild(btn);
 }
 
-/* Close payment modal */
 function closeModal() {
   document.getElementById("paymentModal").classList.add("hidden");
 }
 
-/* Toast notification */
 function showToast(msg = "✅ Receipt generated successfully!") {
   const toast = document.getElementById("toast");
   toast.textContent = msg;
@@ -511,7 +508,6 @@ function showToast(msg = "✅ Receipt generated successfully!") {
   setTimeout(() => toast.classList.add("hidden"), 3000);
 }
 
-/* Validate & verify transaction */
 function verifyTransaction(txnId, planName, amount) {
   if (txnId.length >= 8) {
     generateReceipt(planName, amount, txnId);
@@ -521,22 +517,21 @@ function verifyTransaction(txnId, planName, amount) {
   }
 }
 
-/* 🧾 Generate clean, formatted payment receipt */
+// 🧾 Generate clean PDF Receipt
 function generateReceipt(planName, amount, txnId) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
   const date = new Date().toLocaleString();
 
-  // Header
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
   doc.text("Jay Ambe Broadband Service", 20, 20);
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(14);
   doc.text("Payment Receipt", 20, 30);
   doc.line(20, 33, 190, 33);
 
-  // Details
   doc.setFontSize(12);
   let y = 50;
   doc.text(`Plan: ${planName}`, 20, y);
@@ -544,14 +539,12 @@ function generateReceipt(planName, amount, txnId) {
   doc.text(`Transaction ID: ${txnId}`, 20, y + 20);
   doc.text(`Date: ${date}`, 20, y + 30);
   doc.text("Payment Mode: UPI (GPay / PhonePe / Paytm)", 20, y + 45);
-  doc.text("UPI ID: vijaytikona.in@oksbi", 20, y + 55);
+  doc.text("Payment Verified", 20, y + 60);
 
-  // Footer
   doc.setFont("helvetica", "bold");
-  doc.text("✅ Payment Verified", 20, y + 75);
+  doc.text("Thank you for choosing Jay Ambe Broadband Service!", 20, y + 80);
   doc.setFont("helvetica", "normal");
-  doc.text("Thank you for choosing Jay Ambe Broadband Service!", 20, y + 90);
-  doc.text("We appreciate your trust and look forward to serving you again.", 20, y + 100);
+  doc.text("We appreciate your trust and look forward to serving you again.", 20, y + 90);
 
   doc.save(`JayAmbe_Receipt_${txnId}.pdf`);
 }
@@ -655,6 +648,7 @@ function generateReceipt(planName, amount, txnId) {
 
 </style>
 {% endblock %}
+
 
 
 
