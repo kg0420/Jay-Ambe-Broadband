@@ -459,37 +459,33 @@ function payNow(amount, planName) {
 
   const btn = document.createElement("button");
   btn.textContent = `Pay ₹${amount}`;
-  btn.className =
-    "block w-full bg-[#6f2232] text-white py-2 rounded-xl hover:bg-[#c3073f] hover:scale-105 transition-all duration-300";
+  btn.className = "block w-full bg-[#6f2232] text-white py-2 rounded-xl hover:bg-[#c3073f] hover:scale-105 transition-all duration-300";
 
-  // ✅ Trigger payment directly via user action
   btn.addEventListener("click", () => {
     if (isMobile()) {
-      // ✅ Open payment app directly in new window (fixes blocked redirect)
-      const paymentWindow = window.open(upiLink, "_blank");
-      if (!paymentWindow) {
-        // fallback if popup blocked
-        window.location.href = upiLink;
-      }
+      // Open payment app
+      window.location.href = upiLink;
+
+      // Wait until the user comes back to page
+      const handleReturn = () => {
+        document.removeEventListener("visibilitychange", handleReturn);
+        if (document.visibilityState === "visible") {
+          setTimeout(() => {
+            const txnId = prompt("📩 Enter your UPI Transaction ID after successful payment:");
+            if (txnId && txnId.trim() !== "") {
+              verifyTransaction(txnId.trim(), planName, amount);
+            } else {
+              alert("❌ Receipt generation cancelled. No transaction ID provided.");
+            }
+          }, 1000);
+        }
+      };
+      document.addEventListener("visibilitychange", handleReturn);
     } else {
-      // Desktop fallback → show QR
-      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-        upiLink
-      )}`;
+      // Desktop fallback → QR
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
       qrSection.classList.remove("hidden");
     }
-
-    // Wait for user to pay & confirm
-    setTimeout(() => {
-      const txnId = prompt(
-        "📩 After completing your payment, please enter your UPI Transaction ID:"
-      );
-      if (txnId && txnId.trim() !== "") {
-        verifyTransaction(txnId.trim(), planName, amount);
-      } else {
-        alert("❌ Receipt generation cancelled. No transaction ID provided.");
-      }
-    }, 4000);
   });
 
   durationContainer.appendChild(btn);
@@ -653,4 +649,5 @@ function generateReceipt(planName, amount, txnId) {
 
 </style>
 {% endblock %}
+
 
