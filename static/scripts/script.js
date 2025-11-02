@@ -31,7 +31,7 @@ function togglePlan(header) {
 
 // 💳 Start Payment using GPay / UPI
 function payNow(amount, planName) {
-  const upiId = "jayambe@oksbi"; // ✅ Your actual UPI ID (change if needed)
+  const upiId = "vijaytikona.in@oksbi"; // ✅ Your actual UPI ID (change if needed)
   const name = "Jay Ambe Broadband Service";
   const note = encodeURIComponent(`Payment for ${planName}`);
   const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${note}`;
@@ -109,3 +109,4 @@ function verifyTransaction(txnId, planName, amount) {
     alert("⚠️ Invalid Transaction ID. Please check and try again.");
   }
 }
+
