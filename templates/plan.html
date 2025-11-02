@@ -409,112 +409,148 @@
 
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script>
-  AOS.init({ once: true, duration: 800, offset: 100 });
+AOS.init({ once: true, duration: 800, offset: 100 });
 
-  const planPrices = {
-    "20 Mbps": { "1 Month": 400, "3 Month": 1150, "6 Month": 2300, "Yearly": 4600 },
-    "40 Mbps": { "1 Month": 450, "3 Month": 1300, "6 Month": 2600, "Yearly": 5200 },
-    "60 Mbps": { "1 Month": 500, "3 Month": 1450, "6 Month": 2900, "Yearly": 5800 },
-    "75 Mbps": { "1 Month": 600, "3 Month": 1750, "6 Month": 3500, "Yearly": 7000 },
-    "100 Mbps": { "1 Month": 700, "3 Month": 2000, "6 Month": 4000, "Yearly": 8000 },
-    "150 Mbps": { "1 Month": 900, "3 Month": 2600, "6 Month": 5200, "Yearly": 10400 },
-  };
+const planPrices = {
+  "20 Mbps": { "1 Month": 400, "3 Month": 1150, "6 Month": 2300, "Yearly": 4600 },
+  "40 Mbps": { "1 Month": 450, "3 Month": 1300, "6 Month": 2600, "Yearly": 5200 },
+  "60 Mbps": { "1 Month": 500, "3 Month": 1450, "6 Month": 2900, "Yearly": 5800 },
+  "75 Mbps": { "1 Month": 600, "3 Month": 1750, "6 Month": 3500, "Yearly": 7000 },
+  "100 Mbps": { "1 Month": 700, "3 Month": 2000, "6 Month": 4000, "Yearly": 8000 },
+  "150 Mbps": { "1 Month": 900, "3 Month": 2600, "6 Month": 5200, "Yearly": 10400 },
+};
 
-  function isMobile() {
-    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-  }
+// Detect mobile device
+function isMobile() {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
+// OTT hover bounce animation
+document.querySelectorAll('.ott-item').forEach(item => {
+  item.addEventListener('mouseenter', () => item.classList.add('animate-bounce-once'));
+  item.addEventListener('mouseleave', () => item.classList.remove('animate-bounce-once'));
+});
+
+// Dropdown for plan tables
 function togglePlan(header) {
-    const table = header.nextElementSibling;
-    const icon = header.querySelector("i");
-    table.classList.toggle("hidden");
-    icon.classList.toggle("rotate-180");
-  }
-  function payNow(amount, planName) {
-    const modal = document.getElementById("paymentModal");
-    const title = document.getElementById("selectedPlan");
-    const durationContainer = document.getElementById("durationOptions");
-    const qrSection = document.getElementById("qrSection");
-    const qrImg = document.getElementById("upiQr");
+  const table = header.nextElementSibling;
+  const icon = header.querySelector("i");
+  table.classList.toggle("hidden");
+  icon.classList.toggle("rotate-180");
+}
 
-    modal.classList.remove("hidden");
-    qrSection.classList.add("hidden");
-    title.textContent = planName;
-    durationContainer.innerHTML = "";
+// Payment modal setup
+function payNow(amount, planName) {
+  const modal = document.getElementById("paymentModal");
+  const title = document.getElementById("selectedPlan");
+  const durationContainer = document.getElementById("durationOptions");
+  const qrSection = document.getElementById("qrSection");
+  const qrImg = document.getElementById("upiQr");
 
-    const upiId = "vijaytikona.in@oksbi";
-    const name = "Vijay Gupta";
-    const note = encodeURIComponent(planName);
-    const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${note}`;
+  modal.classList.remove("hidden");
+  qrSection.classList.add("hidden");
+  title.textContent = planName;
+  durationContainer.innerHTML = "";
 
-    const btn = document.createElement("button");
-    btn.textContent = `Pay ₹${amount}`;
-    btn.className = "block w-full bg-[#6f2232] text-white py-2 rounded-xl hover:bg-[#c3073f] hover:scale-105 transition-all duration-300";
-    btn.onclick = () => {
-      if (isMobile()) {
-        window.location.href = upiLink;
-      } else {
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
-        qrSection.classList.remove("hidden");
-      }
+  const upiId = "vijaytikona.in@oksbi";
+  const name = "Vijay Gupta";
+  const note = encodeURIComponent(planName);
+  const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${note}`;
 
-      setTimeout(() => {
-        const txnId = prompt("📩 After completing your payment, please enter your UPI Transaction ID:");
-        if (txnId && txnId.trim() !== "") {
-          verifyTransaction(txnId.trim(), planName, amount);
-        } else {
-          alert("❌ Receipt generation cancelled. No transaction ID provided.");
-        }
-      }, 4000);
-    };
-    durationContainer.appendChild(btn);
-  }
-  function closeModal() {
-    document.getElementById("paymentModal").classList.add("hidden");
-  }
-
-  function showToast(msg = "✅ Receipt generated successfully!") {
-    const toast = document.getElementById("toast");
-    toast.textContent = msg;
-    toast.classList.remove("hidden");
-    setTimeout(() => toast.classList.add("hidden"), 3000);
-  }
-
-  function verifyTransaction(txnId, planName, amount) {
-    if (txnId.length >= 8) {
-      generateReceipt(planName, amount, txnId);
-      showToast();
+  const btn = document.createElement("button");
+  btn.textContent = `Pay ₹${amount}`;
+  btn.className = "block w-full bg-[#6f2232] text-white py-2 rounded-xl hover:bg-[#c3073f] hover:scale-105 transition-all duration-300";
+  btn.onclick = () => {
+    if (isMobile()) {
+      window.location.href = upiLink;
     } else {
-      alert("⚠️ Invalid Transaction ID. Please check and try again.");
+      qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upiLink)}`;
+      qrSection.classList.remove("hidden");
     }
+
+    setTimeout(() => {
+      const txnId = prompt("📩 After completing your payment, please enter your UPI Transaction ID:");
+      if (txnId && txnId.trim() !== "") {
+        verifyTransaction(txnId.trim(), planName, amount);
+      } else {
+        alert("❌ Receipt generation cancelled. No transaction ID provided.");
+      }
+    }, 4000);
+  };
+  durationContainer.appendChild(btn);
+}
+
+function closeModal() {
+  document.getElementById("paymentModal").classList.add("hidden");
+}
+
+function showToast(msg = "✅ Receipt generated successfully!") {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.classList.remove("hidden");
+  setTimeout(() => toast.classList.add("hidden"), 3000);
+}
+
+function verifyTransaction(txnId, planName, amount) {
+  if (txnId.length >= 8) {
+    generateReceipt(planName, amount, txnId);
+    showToast();
+  } else {
+    alert("⚠️ Invalid Transaction ID. Please check and try again.");
   }
+}
 
-  function generateReceipt(planName, amount, txnId) {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    const date = new Date().toLocaleString();
+// 🧾 Generate clean, formatted PDF Receipt
+function generateReceipt(planName, amount, txnId) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const date = new Date().toLocaleString();
 
-    doc.setFontSize(18);
-    doc.text("Jay Ambe Broadband Service", 20, 20);
-    doc.setFontSize(12);
-    doc.text("Payment Receipt", 20, 30);
-    doc.line(20, 32, 190, 32);
+  // Title
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text("Jay Ambe Broadband Service", 20, 20);
 
-    doc.text(`Plan: ${planName}`, 20, 45);
-    doc.text(`Amount: ₹${amount}`, 20, 55);
-    doc.text(`Transaction ID: ${txnId}`, 20, 65);
-    doc.text(`Date: ${date}`, 20, 75);
-    doc.text("Payment Mode: UPI (GPay / PhonePe / Paytm)", 20, 90);
-    doc.text("UPI ID: bajajpay.6879729.01561666@indus", 20, 100);
+  // Subtitle
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(14);
+  doc.text("Payment Receipt", 20, 30);
+  doc.line(20, 33, 190, 33);
 
-    doc.text("✅ Payment Verified", 20, 115);
-    doc.text("Thank you for choosing Jay Ambe Broadband!", 20, 130);
-    doc.save(`JayAmbe_Receipt_${txnId}.pdf`);
-  }
+  // Content
+  doc.setFontSize(12);
+  let y = 50;
+  doc.text(`Plan: ${planName}`, 20, y);
+  doc.text(`Amount: Rs. ${amount}`, 20, y + 10);
+  doc.text(`Transaction ID: ${txnId}`, 20, y + 20);
+  doc.text(`Date: ${date}`, 20, y + 30);
+  doc.text("Payment Mode: UPI (GPay / PhonePe / Paytm)", 20, y + 45);
+  // doc.text(`UPI ID:${upiId} `, 20, y + 55);
 
+  // Footer message
+  doc.setFont("helvetica", "bold");
+  doc.text("Payment Verified", 20, y + 75);
+  doc.setFont("helvetica", "normal");
+  doc.text("Thank you for choosing Jay Ambe Broadband Service!", 20, y + 90);
+  doc.text("We appreciate your trust and look forward to serving you again.", 20, y + 100);
+
+  doc.save(`JayAmbe_Receipt_${txnId}.pdf`);
+}
 
 </script>
 
+
 <style>
+  /* one-time bounce animation */
+@keyframes bounceOnce {
+  0%   { transform: scale(1) }
+  50%  { transform: scale(1.08) translateY(-3px) }
+  100% { transform: scale(1) }
+}
+.animate-bounce-once {
+  animation: bounceOnce 0.6s ease-out;
+}
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -559,5 +595,45 @@ function togglePlan(header) {
       font-size: 1.9rem;
     }
   }
+  /* CSS */
+.ott-item img {
+  /* subtle initial state */
+  transform: translateY(0);
+  opacity: 1;
+}
+.ott-item:hover img {
+  /* hover effect: lift + glow */
+  transform: translateY(-5px) scale(1.05);
+  opacity: 1;
+  box-shadow: 0 8px 20px rgba(0,255,255,0.2);
+}
+.ott-item span {
+  transition: color 0.3s;
+}
+.ott-item:hover span {
+  color: #22d3ee; /* some cyan highlight */
+}
+
+/* Tooltip style */
+.ott-item[data-tooltip]:hover:after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 110%;
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 0.3rem 0.6rem;
+  border-radius: 0.3rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 1;
+  transform: translateY(-4px);
+  transition: all 0.2s;
+}
+.ott-item[data-tooltip]:after {
+  opacity: 0;
+  transition: all 0.2s;
+}
+
 </style>
 {% endblock %}
