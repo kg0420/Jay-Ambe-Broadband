@@ -15,9 +15,9 @@ PAYMENT_EXCEL = os.path.join(DATA_FOLDER, "payments.xlsx")
 
 
 # ---------- Helper Function: Save Payment to Excel ----------
-def save_payment_to_excel(name, amount, upi_id, txn_id, status="Success"):
+def save_payment_to_excel(name, amount, upi_id, txn_id, status):
     """Appends new payment record to payments.xlsx or creates file if not exists."""
-    new_record = {
+    record = {
         "Name": [name],
         "Amount": [amount],
         "UPI ID": [upi_id],
@@ -26,9 +26,8 @@ def save_payment_to_excel(name, amount, upi_id, txn_id, status="Success"):
         "Date": [datetime.now().strftime("%d-%m-%Y %H:%M:%S")]
     }
 
-    new_df = pd.DataFrame(new_record)
+    new_df = pd.DataFrame(record)
 
-    # Append to existing file or create new one
     if os.path.exists(PAYMENT_EXCEL):
         old_df = pd.read_excel(PAYMENT_EXCEL)
         updated_df = pd.concat([old_df, new_df], ignore_index=True)
@@ -52,14 +51,22 @@ def plan():
 def generate_receipt():
     data = request.get_json()
 
-    # Extract form data safely
+    # Extract payment details
     name = data.get('name', 'Unknown')
     amount = float(data.get('amount', 0))
     upi_id = data.get('upi_id', 'jayambe@ybl')
     txn_id = data.get('txn_id', f"TXN{datetime.now().strftime('%Y%m%d%H%M%S')}")
+    status = data.get('status', 'Success')  # Default = Success unless frontend sends "Cancelled"
 
-    # ✅ Save Payment to Excel File
-    save_payment_to_excel(name, amount, upi_id, txn_id, "Success")
+    # Save to Excel
+    save_payment_to_excel(name, amount, upi_id, txn_id, status)
+
+    # If payment cancelled — no receipt should be generated
+    if status.lower() != "success":
+        return jsonify({
+            "message": "Payment cancelled. Record saved for reference.",
+            "status": status
+        }), 200
 
     # ---------- Generate PDF Receipt ----------
     pdf_buffer = BytesIO()
@@ -74,13 +81,12 @@ def generate_receipt():
     c.drawString(50, 700, f"Transaction ID: {txn_id}")
     c.drawString(50, 680, f"Date: {datetime.now().strftime('%d-%m-%Y %H:%M:%S')}")
     c.line(50, 660, 550, 660)
-    c.drawString(50, 640, "Payment Status: Success ✅")
-    c.drawString(50, 620, "Thank you for your payment!")
+    c.drawString(50, 640, f"Payment Status: {status} {'✅' if status == 'Success' else '❌'}")
+    c.drawString(50, 620, "Thank you for your payment!" if status == "Success" else "Payment not completed.")
     c.save()
 
     pdf_buffer.seek(0)
 
-    # Send back the receipt PDF
     return send_file(
         pdf_buffer,
         as_attachment=True,
@@ -94,7 +100,6 @@ def view_payments():
     """Return all payments in JSON format."""
     if not os.path.exists(PAYMENT_EXCEL):
         return jsonify([])
-
     df = pd.read_excel(PAYMENT_EXCEL)
     return jsonify(df.to_dict(orient="records"))
 
