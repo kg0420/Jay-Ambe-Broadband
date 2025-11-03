@@ -57,7 +57,7 @@
       alt="Broadband Banner"
       class="w-full max-h-[420px] object-contain rounded-xl border-4 border-cyan-500/40 shadow-[0_0_25px_rgba(34,211,238,0.4)] hover:scale-[1.02] transition-transform duration-500"
     />
-    <h1 class="text-3xl md:text-5xl font-extrabold mt-6 text-cyan-300">Welcome to Jay Ambe Broadband</h1>
+    <h1 class="text-3xl md:text-5xl font-serif font-extrabold mt-6 text-cyan-300">Welcome to Jay Ambe Broadband</h1>
     <p class="text-gray-300 mt-3 max-w-2xl mx-auto">
       Experience blazing-fast internet, zero installation cost, and same-day activation.
     </p>
@@ -130,4 +130,41 @@
   </div>
 </section>
 
+<!-- 💬 Feedback Section -->
+<div class="min-h-screen bg-slate-900 text-white flex justify-center items-center px-6 py-10">
+  <form method="POST" class="bg-slate-800/80 p-8 rounded-2xl shadow-xl w-full max-w-lg">
+    <h2 class="text-3xl font-bold text-cyan-400 mb-6 text-center font-serif">Send Us Feedback</h2>
+    
+    <div class="mb-4">
+      <label for="name" class="block text-sm mb-2">Your Name</label>
+      <input type="text" id="name" name="name" required class="w-full p-2 rounded bg-slate-700 border border-cyan-500 focus:ring-2 focus:ring-cyan-400" />
+    </div>
+
+    <div class="mb-4">
+      <label for="email" class="block text-sm mb-2">Email</label>
+      <input type="email" id="email" name="email" required class="w-full p-2 rounded bg-slate-700 border border-cyan-500 focus:ring-2 focus:ring-cyan-400" />
+    </div>
+
+    <div class="mb-4">
+      <label for="message" class="block text-sm mb-2">Message</label>
+      <textarea id="message" name="message" rows="4" required class="w-full p-2 rounded bg-slate-700 border border-cyan-500 focus:ring-2 focus:ring-cyan-400"></textarea>
+    </div>
+
+    <button type="submit" class="w-full bg-cyan-500 hover:bg-cyan-400 text-black font-semibold py-2 rounded-lg transition">Send Feedback</button>
+  </form>
+</div>
+
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="fixed bottom-6 right-6 z-50">
+    {% for category, msg in messages %}
+    <div class="flash-message bg-slate-800 border border-cyan-400 text-white px-4 py-2 rounded-lg shadow-lg mb-2 animate-bounce">
+      {{ msg }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
 {% endblock %}
+<script src="static/scripts/script.js"></script>
