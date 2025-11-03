@@ -29,15 +29,31 @@ function togglePlan(header) {
   icon.classList.toggle("rotate-180");
 }
 
-// 💳 Start Payment using GPay / UPI
+// 💳 Pay Now Function (Unified with Excel Data + Receipt)
 function payNow(amount, planName) {
-  const upiId = "bajajpay.6879729.01561666@indus"; // ✅ Your actual UPI ID (change if needed)
-  const name = "Jay Ambe Broadband Service";
-  const note = encodeURIComponent(`Payment for ${planName}`);
-  const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(name)}&am=${amount}&cu=INR&tn=${note}`;
+  const username = prompt("Enter your name to proceed with payment:");
 
+  if (!username) {
+    alert("⚠️ Please enter your name to continue.");
+    return;
+  }
+
+  const upiId = "bajajpay.6879729.01561666@indus"; // ✅ Your actual UPI ID
+  const note = encodeURIComponent(`Payment for ${planName}`);
+  const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent("Jay Ambe Broadband")}&am=${amount}&cu=INR&tn=${note}`;
+
+  // 📦 Step 1: Save user details to Flask backend (Excel)
+  fetch("/store_data", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, plan: planName, amount })
+  })
+  .then(res => res.json())
+  .then(data => console.log("✅ User data stored:", data))
+  .catch(err => console.error("❌ Error saving data:", err));
+
+  // 📲 Step 2: Open UPI App (Mobile)
   if (isMobile()) {
-    // 🟢 Open GPay or any UPI app
     window.location.href = upiLink;
 
     // Wait for user to return from payment app
@@ -47,16 +63,16 @@ function payNow(amount, planName) {
         setTimeout(() => {
           const txnId = prompt("📩 Enter your UPI Transaction ID after successful payment:");
           if (txnId && txnId.trim() !== "") {
-            verifyTransaction(txnId.trim(), planName, amount);
+            verifyTransaction(txnId.trim(), planName, amount, username, upiId);
           } else {
-            alert("❌ No Transaction ID provided. Payment not verified.");
+            alert("❌ No Transaction ID entered. Payment not verified.");
           }
         }, 1200);
       }
     });
-
-  } else {
-    // 💻 Desktop fallback: show QR code
+  } 
+  else {
+    // 💻 Desktop fallback – show QR modal
     const qrImg = document.getElementById("upiQr");
     const qrSection = document.getElementById("qrSection");
     const modal = document.getElementById("paymentModal");
@@ -69,82 +85,36 @@ function payNow(amount, planName) {
   }
 }
 
-// ❌ Close payment modal
+// 🧾 Verify Payment & Generate Receipt (via Flask)
+function verifyTransaction(txnId, planName, amount, username, upiId) {
+  fetch("/generate_receipt", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: username, amount, upi_id: upiId, txn_id: txnId })
+  })
+    .then(res => res.blob())
+    .then(blob => {
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `JayAmbe_Receipt_${txnId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      showToast("✅ Receipt generated successfully!");
+    })
+    .catch(err => alert("⚠️ Error generating receipt: " + err.message));
+}
+
+// ❌ Close Modal
 function closeModal() {
   document.getElementById("paymentModal").classList.add("hidden");
 }
 
-// ✅ Show toast alert
-function showToast(msg = "✅ Receipt generated successfully!") {
+// ✅ Toast Notification
+function showToast(msg) {
   const toast = document.getElementById("toast");
   toast.textContent = msg;
   toast.classList.remove("hidden");
   setTimeout(() => toast.classList.add("hidden"), 3000);
 }
-
-// 🧾 Verify Transaction & Request Flask to Generate Receipt
-function verifyTransaction(txnId, planName, amount) {
-  if (txnId.length >= 8) {
-    fetch("/generate_receipt", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ txnId, planName, amount })
-    })
-      .then(res => {
-        if (!res.ok) throw new Error("Server Error");
-        return res.blob();
-      })
-      .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `JayAmbe_Receipt_${txnId}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        showToast();
-      })
-      .catch(err => alert("⚠️ Failed to generate receipt: " + err.message));
-  } else {
-    alert("⚠️ Invalid Transaction ID. Please check and try again.");
-  }
-}
-
-document.getElementById("payButton").addEventListener("click", () => {
-  const name = document.getElementById("name").value.trim();
-  const amount = document.getElementById("amount").value.trim();
-
-  if (!name || !amount) {
-    alert("Please enter your name and amount.");
-    return;
-  }
-
-  const upiId = "jayambe@ybl"; // Your GPay UPI ID
-  const txnId = "TXN" + Date.now();
-
-  // Create UPI payment URL (works for GPay, PhonePe, Paytm, etc.)
-  const upiUrl = `upi://pay?pa=${upiId}&pn=Jay%20Ambe%20Broadband&am=${amount}&cu=INR&tn=Broadband%20Bill%20Payment`;
-
-  // Open GPay / UPI app
-  window.location.href = upiUrl;
-
-  // After payment, generate receipt manually (user confirmation)
-  setTimeout(() => {
-    if (confirm("Did you complete the payment?")) {
-      fetch("/generate_receipt", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, amount, upi_id: upiId, txn_id: txnId }),
-      })
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById("status").innerText =
-            "✅ Payment confirmed! Downloading your receipt...";
-          window.location.href = `/download_receipt/${data.file}`;
-        })
-        .catch(err => alert("Error generating receipt: " + err));
-    } else {
-      alert("Payment not confirmed. Please try again.");
-    }
-  }, 5000);
-});
