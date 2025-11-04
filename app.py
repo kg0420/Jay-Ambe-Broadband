@@ -5,6 +5,7 @@ import os
 from datetime import datetime
 import smtplib
 from email.message import EmailMessage
+from flask import send_from_directory
 
 app = Flask(__name__)
 app.secret_key = "Krish123"
@@ -121,6 +122,16 @@ def feedback():
         return redirect("/feedback")
 
     return render_template("feedback.html")  # Feedback page
+
+
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('.', 'robots.txt')
+
+
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('.', 'sitemap.xml')
 
 # -------------------- Run the Flask App --------------------
 if __name__ == "__main__":
