@@ -6,6 +6,7 @@ from datetime import datetime
 import smtplib
 from email.message import EmailMessage
 from flask import send_from_directory
+from flask import Response
 
 app = Flask(__name__)
 app.secret_key = "Krish123"
@@ -124,10 +125,14 @@ def feedback():
     return render_template("feedback.html")  # Feedback page
 
 
+
 @app.route('/robots.txt')
 def robots():
-    content = "User-agent: *\nAllow: /\nSitemap: https://jay-ambe-broadband.onrender.com/sitemap.xml"
-    return Response(content, mimetype='text/plain')
+    return Response(
+        "User-agent: *\nAllow: /\nSitemap: https://jay-ambe-broadband.onrender.com/sitemap.xml",
+        mimetype='text/plain'
+    )
+
 
 
 @app.route('/sitemap.xml')
@@ -137,4 +142,5 @@ def sitemap():
 # -------------------- Run the Flask App --------------------
 if __name__ == "__main__":
     app.run(debug=True)
+
 
