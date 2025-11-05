@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://jay-ambe-broadband.onrender.com</loc>
-    <priority>1.0</priority>
+    <loc>https://jay-ambe-broadband.onrender.com/</loc>
   </url>
   <url>
-    <loc>https://jay-ambe-broadband.onrender.com/plan</loc>
-    <priority>0.8</priority>
+    <loc>https://jay-ambe-broadband.onrender.com/plans</loc>
+  </url>
+  <url>
+    <loc>https://jay-ambe-broadband.onrender.com/contact</loc>
   </url>
 </urlset>
