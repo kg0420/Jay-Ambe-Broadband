@@ -39,7 +39,7 @@ function payNow(amount, planName) {
     return;
   }
 
-  const upiId = "kg2043139-1@okicici"; // ✅ Business UPI
+  const upiId = "kg2043139-2@okaxis"; // ✅ Business UPI
   const note = encodeURIComponent(`Payment for ${planName}`);
   const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
     "Jay Ambe Broadband"
@@ -151,4 +151,5 @@ function showToast(msg) {
       setTimeout(() => msg.remove(), 500);
     });
   }, 4000);
+
 
