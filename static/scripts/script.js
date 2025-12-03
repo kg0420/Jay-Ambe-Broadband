@@ -38,9 +38,11 @@ function payNow(amount, planName) {
   const upiId = "7219570360@okbizaxis";
   const note = encodeURIComponent(`Payment for ${planName}`);
 
-  const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
-    "Jay Ambe Broadband"
-  )}&am=${amount}&cu=INR&tn=${note}`;
+  const upiLink = `https://gpay.app.goo.gl/pay?pa=${upiId}&pn=${encodeURIComponent(
+  "Jay Ambe Broadband"
+  )}&am=${amount}&mode=02&orgid=000000&tn=${note}`;
+
+
 
   // --- STEP 1: Immediately attempt UPI launch from DIRECT TAP ---
   try {
