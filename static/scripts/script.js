@@ -33,29 +33,25 @@ function togglePlan(header) {
 // 💳 Main Payment Flow
 function payNow(amount, planName) {
   const username = prompt("Enter your name to proceed with payment:");
-
   if (!username || username.trim() === "") {
     alert("⚠️ Please enter your name to continue.");
     return;
   }
 
-  const upiId = "kg2043139-2@okaxis"; // ✅ Business UPI
+  const upiId = "7219570360@okbizaxis"; // ✅ Business UPI
   const note = encodeURIComponent(`Payment for ${planName}`);
   const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
     "Jay Ambe Broadband"
   )}&am=${amount}&cu=INR&tn=${note}`;
 
-  // Step 1️⃣ Store preliminary transaction in Flask backend (Pending)
+  // Step 1️⃣ Store preliminary transaction (Pending)
   fetch("/store_data", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, plan: planName, amount, status: "Pending" }),
-  })
-    .then((res) => res.json())
-    .then((data) => console.log("📝 Stored pending payment:", data))
-    .catch((err) => console.error("❌ Error storing pending data:", err));
+  }).catch(console.error);
 
-  // Step 2️⃣ Handle Mobile Payment
+  // Step 2️⃣ Mobile flow
   if (isMobile()) {
     window.location.href = upiLink;
 
@@ -65,29 +61,21 @@ function payNow(amount, planName) {
 
         setTimeout(() => {
           const txnId = prompt("📩 Enter your UPI Transaction ID after payment:");
-
           if (txnId && txnId.trim() !== "") {
             verifyTransaction(txnId.trim(), planName, amount, username, upiId);
           } else {
             alert("❌ Transaction not verified. Payment marked as cancelled.");
-
-            // 🟥 Log Cancelled Transaction
             fetch("/store_data", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                username,
-                plan: planName,
-                amount,
-                status: "Cancelled",
-              }),
+              body: JSON.stringify({ username, plan: planName, amount, status: "Cancelled" }),
             }).catch(() => {});
           }
         }, 1200);
       }
     });
   } else {
-    // Step 3️⃣ Desktop QR Payment Modal
+    // Step 3️⃣ Desktop flow (QR modal)
     const qrImg = document.getElementById("upiQr");
     const qrSection = document.getElementById("qrSection");
     const modal = document.getElementById("paymentModal");
@@ -97,13 +85,12 @@ function payNow(amount, planName) {
     qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
       upiLink
     )}`;
-
     qrSection.classList.remove("hidden");
     modal.classList.remove("hidden");
   }
 }
 
-// 🧾 Verify Transaction → Generate PDF Receipt + Update Excel
+// 🧾 Verify Transaction → Generate PDF Receipt
 function verifyTransaction(txnId, planName, amount, username, upiId) {
   fetch("/generate_receipt", {
     method: "POST",
@@ -143,13 +130,94 @@ function showToast(msg) {
   setTimeout(() => toast.classList.add("hidden"), 3000);
 }
 
-// Auto-hide flash message after 4 seconds
-  setTimeout(() => {
-    document.querySelectorAll('.flash-message').forEach(msg => {
-      msg.style.opacity = '0';
-      msg.style.transition = 'opacity 0.5s';
-      setTimeout(() => msg.remove(), 500);
+// 🕒 Auto-hide flash message
+setTimeout(() => {
+  document.querySelectorAll(".flash-message").forEach((msg) => {
+    msg.style.opacity = "0";
+    msg.style.transition = "opacity 0.5s";
+    setTimeout(() => msg.remove(), 500);
+  });
+}, 4000);
+
+// 🌐 Language Translation Logic
+document.addEventListener("DOMContentLoaded", () => {
+  const langSelect = document.getElementById("languageSelect");
+  const storedLang = localStorage.getItem("siteLang") || "en";
+  langSelect.value = storedLang;
+
+  async function translatePage(lang) {
+    localStorage.setItem("siteLang", lang);
+
+    const elements = document.querySelectorAll(
+      "h1, h2, h3, h4, h5, h6, p, li, button, span, label, th, td, option, strong, em, small, div"
+    );
+
+    let count = 0;
+    const loader = document.createElement("div");
+    loader.innerText = "Translating...";
+    Object.assign(loader.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      background: "rgba(0,0,0,0.8)",
+      color: "white",
+      padding: "8px 20px",
+      borderRadius: "10px",
+      zIndex: "99999",
+      fontSize: "14px",
+      fontFamily: "Poppins, sans-serif",
     });
-  }, 4000);
+    document.body.appendChild(loader);
 
+    for (const el of elements) {
+      const style = window.getComputedStyle(el);
+      if (style.display === "none" || !el.textContent.trim()) continue;
+      if (el.querySelector("i, svg, img, input, textarea, a")) continue;
 
+      const original = el.getAttribute("data-original-text") || el.textContent.trim();
+      if (!el.getAttribute("data-original-text")) {
+        el.setAttribute("data-original-text", original);
+      }
+
+      if (lang === "en") {
+        el.textContent = original;
+      } else {
+        try {
+          const res = await fetch("/translate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: original, lang }),
+          });
+          const data = await res.json();
+          if (data.translated_text && data.translated_text !== original) {
+            el.textContent = data.translated_text;
+            count++;
+          }
+        } catch (err) {
+          console.error("❌ Translation error:", err);
+        }
+      }
+    }
+
+    loader.innerText = `✅ Translated ${count} elements`;
+    setTimeout(() => loader.remove(), 2000);
+
+    // 🔁 Refresh animations
+    if (window.AOS) setTimeout(() => AOS.refresh(), 800);
+
+    // 🔁 Reattach interactivity
+    rebindInteractiveElements();
+  }
+
+  function rebindInteractiveElements() {
+    // Keeps payment buttons, Razorpay, toggles etc. alive
+    document.querySelectorAll(".plan-header")?.forEach((h) => {
+      h.onclick = () => togglePlan(h);
+    });
+    console.log("♻️ Interactive elements rebound.");
+  }
+
+  langSelect.addEventListener("change", (e) => translatePage(e.target.value));
+
+  if (storedLang !== "en") translatePage(storedLang);
+});
