@@ -31,6 +31,8 @@ function togglePlan(header) {
 }
 
 // 💳 Main Payment Flow
+// --- Copy this entire payNow function ---
+
 function payNow(amount, planName) {
   const username = prompt("Enter your name to proceed with payment:");
   if (!username || username.trim() === "") {
@@ -38,57 +40,95 @@ function payNow(amount, planName) {
     return;
   }
 
-  const upiId = "7219570360@okbizaxis"; // ✅ Business UPI
+  const upiId = "7219570360@okbizaxis";
   const note = encodeURIComponent(`Payment for ${planName}`);
   const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
     "Jay Ambe Broadband"
   )}&am=${amount}&cu=INR&tn=${note}`;
 
-  // Step 1️⃣ Store preliminary transaction (Pending)
+  // Store pending
   fetch("/store_data", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, plan: planName, amount, status: "Pending" }),
   }).catch(console.error);
 
-  // Step 2️⃣ Mobile flow
-  if (isMobile()) {
-    window.location.href = upiLink;
-
-    document.addEventListener("visibilitychange", function handleReturn() {
-      if (document.visibilityState === "visible") {
-        document.removeEventListener("visibilitychange", handleReturn);
-
-        setTimeout(() => {
-          const txnId = prompt("📩 Enter your UPI Transaction ID after payment:");
-          if (txnId && txnId.trim() !== "") {
-            verifyTransaction(txnId.trim(), planName, amount, username, upiId);
-          } else {
-            alert("❌ Transaction not verified. Payment marked as cancelled.");
-            fetch("/store_data", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ username, plan: planName, amount, status: "Cancelled" }),
-            }).catch(() => {});
-          }
-        }, 1200);
-      }
-    });
-  } else {
-    // Step 3️⃣ Desktop flow (QR modal)
-    const qrImg = document.getElementById("upiQr");
-    const qrSection = document.getElementById("qrSection");
-    const modal = document.getElementById("paymentModal");
-    const selectedPlan = document.getElementById("selectedPlan");
-
-    selectedPlan.textContent = `${planName} - ₹${amount}`;
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-      upiLink
-    )}`;
-    qrSection.classList.remove("hidden");
-    modal.classList.remove("hidden");
+  // Desktop? Show QR immediately
+  if (!isMobile()) {
+    openQrModal(upiLink, planName, amount);
+    return;
   }
+
+  // --- MOBILE FLOW START ---
+  let wentBackground = false;
+
+  const visibilityHandler = () => {
+    if (document.visibilityState === "hidden") {
+      wentBackground = true;
+    } 
+    else if (document.visibilityState === "visible" && wentBackground) {
+      document.removeEventListener("visibilitychange", visibilityHandler);
+
+      setTimeout(() => {
+        const txnId = prompt("📩 Enter your UPI Transaction ID after payment:");
+        if (txnId && txnId.trim() !== "") {
+          verifyTransaction(txnId.trim(), planName, amount, username, upiId);
+        } else {
+          alert("❌ Transaction not verified. Payment marked as cancelled.");
+          fetch("/store_data", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, plan: planName, amount, status: "Cancelled" }),
+          }).catch(() => {});
+        }
+      }, 1200);
+    }
+  };
+
+  document.addEventListener("visibilitychange", visibilityHandler);
+
+  // Try launching UPI
+  openUpiLink(upiLink);
+
+  // If UPI didn't launch (still visible), fallback to QR
+  setTimeout(() => {
+    if (!wentBackground) {
+      console.warn("UPI app likely didn't open. Showing QR fallback.");
+      alert("UPI app did not open automatically. Please scan QR to pay.");
+      openQrModal(upiLink, planName, amount);
+      document.removeEventListener("visibilitychange", visibilityHandler);
+    }
+  }, 1500);
 }
+
+
+// 🔗 Better deep-link trigger than window.location
+function openUpiLink(upiLink) {
+  const a = document.createElement("a");
+  a.href = upiLink;
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+
+// 🏷️ QR Modal Reuse
+function openQrModal(upiLink, planName, amount) {
+  const qrImg = document.getElementById("upiQr");
+  const qrSection = document.getElementById("qrSection");
+  const modal = document.getElementById("paymentModal");
+  const selectedPlan = document.getElementById("selectedPlan");
+
+  selectedPlan.textContent = `${planName} - ₹${amount}`;
+  qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+    upiLink
+  )}`;
+
+  qrSection.classList.remove("hidden");
+  modal.classList.remove("hidden");
+}
+
 
 // 🧾 Verify Transaction → Generate PDF Receipt
 function verifyTransaction(txnId, planName, amount, username, upiId) {
@@ -221,3 +261,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (storedLang !== "en") translatePage(storedLang);
 });
+
