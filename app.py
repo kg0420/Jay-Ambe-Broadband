@@ -19,24 +19,24 @@ if not os.path.exists("receipts"):
 
 
 # -------------------- 🌍 TRANSLATION ENDPOINT --------------------
-@app.route("/translate", methods=["POST"])
-def translate():
-    """Translate text dynamically using deep_translator.GoogleTranslator"""
-    try:
-        data = request.get_json()
-        text = data.get("text", "").strip()
-        lang = data.get("lang", "en")
+# @app.route("/translate", methods=["POST"])
+# def translate():
+#     """Translate text dynamically using deep_translator.GoogleTranslator"""
+#     try:
+#         data = request.get_json()
+#         text = data.get("text", "").strip()
+#         lang = data.get("lang", "en")
 
-        if not text:
-            return jsonify({"translated_text": ""})
+#         if not text:
+#             return jsonify({"translated_text": ""})
 
-        translated = GoogleTranslator(source="auto", target=lang).translate(text)
-        print(f"🔄 [{lang}] {text[:30]} ➜ {translated[:30]}")
-        return jsonify({"translated_text": translated})
-    except Exception as e:
-        print("❌ Translation error:", e)
-        # Fallback: return same text if translation fails
-        return jsonify({"translated_text": text})
+#         translated = GoogleTranslator(source="auto", target=lang).translate(text)
+#         print(f"🔄 [{lang}] {text[:30]} ➜ {translated[:30]}")
+#         return jsonify({"translated_text": translated})
+#     except Exception as e:
+#         print("❌ Translation error:", e)
+#         # Fallback: return same text if translation fails
+#         return jsonify({"translated_text": text})
 
 
 # -------------------- 🏠 HOME PAGE --------------------
