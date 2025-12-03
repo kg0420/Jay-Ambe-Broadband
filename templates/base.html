@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}Jay Ambe Broadband Service{% endblock %}</title>
-  <meta name="google-site-verification" content="P7FSH-w93QyITwsJAWAhxib0xC9wdZNCE6rQX8M05_0" />
-  <meta name="robots" content="index, follow">
 
   <!-- FontAwesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
@@ -55,14 +53,15 @@
   <!-- 🌐 Navbar -->
   <nav class="flex justify-between items-center p-4 text-white sticky top-0 z-50 shadow-lg"
        data-aos="fade-down" data-aos-duration="800">
-    <h1 class="text-xl md:text-2xl font-semibold text-cyan-400 tracking-wide">
+    <h1 class="text-xl md:text-2xl font-semibold text-cyan-400 tracking-wide font-serif">
       <i class="fa-solid fa-wifi mr-2 text-cyan-300"></i>Jay Ambe Broadband
     </h1>
 
-    <ul class="flex gap-6 text-sm md:text-base font-medium">
-      <li><a href="/" class="hover:text-cyan-300 glow">Home</a></li>
-      <li><a href="/plan" class="hover:text-cyan-300 glow">Plans</a></li>
-      <li><a href="#contact" class="hover:text-cyan-300 glow">Contact</a></li>
+    <!-- ✅ data-no-translate prevents language change in nav URLs -->
+    <ul id="navLinks" data-no-translate class="flex gap-6 text-sm md:text-base font-medium">
+      <li><a href="/"><span>Home</span></a></li>
+      <li><a href="/plan"><span>Plans</span></a></li>
+      <li><a href="#contact"><span>Contact</span></a></li>
     </ul>
   </nav>
 
@@ -71,57 +70,56 @@
     {% block content %}{% endblock %}
   </main>
 
-<!-- ⚡ Footer -->
-<footer id="contact"
-  class="text-white py-8 mt-auto border-t border-cyan-700/30 bg-white/5 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,255,255,0.05)]"
-  data-aos="fade-up" data-aos-delay="200">
-  
-  <div class="container mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
+  <!-- ⚡ Footer -->
+  <footer id="contact"
+    class="text-white py-8 mt-auto border-t border-cyan-700/30 bg-white/5 backdrop-blur-md shadow-[0_-4px_20px_rgba(0,255,255,0.05)]"
+    data-aos="fade-up" data-aos-delay="200">
+    
+    <div class="container mx-auto px-6 md:px-10 flex flex-col md:flex-row justify-between items-center gap-6 text-center md:text-left">
 
-    <!-- Left Side -->
-    <div class="space-y-1" data-aos="fade-right" data-aos-delay="300">
-      <h3 class="text-xl font-semibold text-cyan-400">Jay Ambe Broadband Service</h3>
-      <a href="https://maps.app.goo.gl/LMUGj3dJ5mMns8Wd7">📍Click Here For Shop Location</a>
+      <!-- Left Side -->
+      <div class="space-y-1" data-aos="fade-right" data-aos-delay="300">
+        <h3 class="text-xl font-semibold text-cyan-400">Jay Ambe Broadband Service</h3>
+        <a href="https://maps.app.goo.gl/LMUGj3dJ5mMns8Wd7" class="hover:scale-110 hover:text-cyan-500">
+          <i class="fa-solid fa-location-dot text-cyan-400"></i> Click Here For Shop Location</a>
+      </div>
+
+      <!-- Center - Contact Info -->
+      <div class="flex flex-col items-center md:items-start gap-2 text-sm text-gray-300" data-aos="fade-up" data-aos-delay="400">
+        <a href="tel:+917977907143" class="flex items-center gap-2 hover:text-cyan-300 transition-all duration-300">
+          <i class="fa-solid fa-phone text-cyan-400"></i> +91 79779 07143
+        </a>
+        <a href="tel:+919867599562" class="flex items-center gap-2 hover:text-cyan-300 transition-all duration-300">
+          <i class="fa-solid fa-phone text-cyan-400"></i> +91 98675 99562
+        </a>
+        <a href="mailto:jayambefibernet@gmail.com" target="_blank"
+           class="flex items-center gap-2 hover:text-pink-400 transition-all duration-300">
+          <i class="fa-solid fa-envelope text-pink-400"></i> jayambefibernet@gmail.com
+        </a>
+        <a href="https://wa.me/7977907143?text=Hi!%20I%20want%20to%20join%20Jay%20Ambe%20Broadband"
+           target="_blank" class="flex items-center gap-2 hover:text-green-400 transition-all duration-300">
+          <i class="fa-brands fa-whatsapp text-green-500"></i> Join us on WhatsApp
+        </a>
+      </div>
+
+      <!-- Right Side - Social Icons -->
+      <div class="flex justify-center md:justify-end gap-5 text-2xl" data-aos="fade-left" data-aos-delay="500">
+        <a href="https://wa.me/7977907143" target="_blank"
+           class="text-green-500 hover:text-green-400 transition-transform transform hover:scale-125">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+        <a href="tel:+9867599562"
+           class="text-cyan-400 hover:text-cyan-300 transition-transform transform hover:scale-125">
+          <i class="fa-solid fa-phone"></i>
+        </a>
+      </div>
     </div>
 
-    <!-- Center - Contact Info -->
-    <div class="flex flex-col items-center md:items-start gap-2 text-sm text-gray-300" data-aos="fade-up" data-aos-delay="400">
-      <a href="tel:+917977907143" class="flex items-center gap-2 hover:text-cyan-300 transition-all duration-300">
-        <i class="fa-solid fa-phone text-cyan-400"></i> +91 79779 07143
-      </a>
-      <a href="tel:+919867599562" class="flex items-center gap-2 hover:text-cyan-300 transition-all duration-300">
-        <i class="fa-solid fa-phone text-cyan-400"></i> +91 98675 99562
-      </a>
-      <a href="mailto:jayambefibernet@gmail.com" target="_blank"
-         class="flex items-center gap-2 hover:text-pink-400 transition-all duration-300">
-        <i class="fa-solid fa-envelope text-pink-400"></i> jayambefibernet@gmail.com
-      </a>
-      <a href="https://wa.me/919876543210?text=Hi!%20I%20want%20to%20join%20Jay%20Ambe%20Broadband"
-         target="_blank" class="flex items-center gap-2 hover:text-green-400 transition-all duration-300">
-        <i class="fa-brands fa-whatsapp text-green-500"></i> Join us on WhatsApp
-      </a>
+    <!-- Bottom Text -->
+    <div class="mt-6 text-center text-sm text-gray-400 border-t border-gray-700/40 pt-3 px-4">
+      &copy; 2024 Jay Ambe Broadband Service. All rights reserved.
     </div>
-
-    <!-- Right Side - Social Icons -->
-    <div class="flex justify-center md:justify-end gap-5 text-2xl" data-aos="fade-left" data-aos-delay="500">
-
-      <a href="https://wa.me/919876543210" target="_blank"
-         class="text-green-500 hover:text-green-400 transition-transform transform hover:scale-125">
-        <i class="fab fa-whatsapp"></i>
-      </a>
-      <a href="tel:+9867599562"
-         class="text-cyan-400 hover:text-cyan-300 transition-transform transform hover:scale-125">
-        <i class="fa-solid fa-phone"></i>
-      </a>
-    </div>
-  </div>
-
-  <!-- Bottom Text -->
-  <div class="mt-6 text-center text-sm text-gray-400 border-t border-gray-700/40 pt-3 px-4">
-    &copy; 2024 Jay Ambe Broadband Service. All rights reserved.
-  </div>
-</footer>
-
+  </footer>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -130,11 +128,44 @@
     AOS.init({ duration: 900, once: true });
   </script>
 
-  {% block scripts %}{% endblock %}
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Rebind Navbar links (works even after translation)
+  function enableNavLinks() {
+    // Smooth scroll for anchor links (#contact)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.onclick = (e) => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute("href"));
+        if (target) target.scrollIntoView({ behavior: "smooth" });
+      };
+    });
+
+    // Restore internal route navigation (/plan, /)
+    document.querySelectorAll('a[href^="/"]').forEach(link => {
+      link.onclick = (e) => {
+        e.preventDefault();
+        window.location.href = link.getAttribute("href");
+      };
+    });
+  }
+
+  // ✅ Initial bind
+  enableNavLinks();
+
+  // ✅ Rebind after translation
+  document.addEventListener("rebindNav", enableNavLinks);
+});
+</script>
+{% endblock %}
+
+<!-- ✅ Called by translator.js to rebind navbar -->
+<script>
+  function triggerNavRebind() {
+    document.dispatchEvent(new Event("rebindNav"));
+  }
+</script>
+
 </body>
 </html>
-
-
-
-
-
