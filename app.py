@@ -6,7 +6,6 @@ from datetime import datetime
 from email.message import EmailMessage
 import smtplib, os
 from flask_cors import CORS
-from deep_translator import GoogleTranslator
 
 # -------------------- APP CONFIG --------------------
 app = Flask(__name__)
@@ -134,3 +133,4 @@ def sitemap():
 if __name__ == "__main__":
     print("✅ Jay Ambe Broadband Flask App Running...")
     app.run(debug=True)
+
