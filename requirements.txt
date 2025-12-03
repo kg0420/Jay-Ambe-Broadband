@@ -9,7 +9,7 @@ Flask-SQLAlchemy
 openpyxl
 reportlab
 pandas
-
+flask-cors
 
 
 
