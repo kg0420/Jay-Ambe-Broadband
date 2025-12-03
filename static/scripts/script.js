@@ -34,99 +34,111 @@ function togglePlan(header) {
 // --- Copy this entire payNow function ---
 
 function payNow(amount, planName) {
-  const username = prompt("Enter your name to proceed with payment:");
-  if (!username || username.trim() === "") {
-    alert("⚠️ Please enter your name to continue.");
-    return;
-  }
 
   const upiId = "7219570360@okbizaxis";
   const note = encodeURIComponent(`Payment for ${planName}`);
+
   const upiLink = `upi://pay?pa=${upiId}&pn=${encodeURIComponent(
     "Jay Ambe Broadband"
   )}&am=${amount}&cu=INR&tn=${note}`;
 
-  // Store pending
-  fetch("/store_data", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, plan: planName, amount, status: "Pending" }),
-  }).catch(console.error);
-
-  // Desktop? Show QR immediately
-  if (!isMobile()) {
-    openQrModal(upiLink, planName, amount);
-    return;
+  // --- STEP 1: Immediately attempt UPI launch from DIRECT TAP ---
+  try {
+    const a = document.createElement("a");
+    a.href = upiLink;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch (err) {
+    console.warn("UPI direct intent blocked.");
   }
 
-  // --- MOBILE FLOW START ---
-  let wentBackground = false;
+  // --- Monitor user return to website ---
+  let wentToUpi = false;
 
-  const visibilityHandler = () => {
+  function handleVisibility() {
     if (document.visibilityState === "hidden") {
-      wentBackground = true;
-    } 
-    else if (document.visibilityState === "visible" && wentBackground) {
-      document.removeEventListener("visibilitychange", visibilityHandler);
-
-      setTimeout(() => {
-        const txnId = prompt("📩 Enter your UPI Transaction ID after payment:");
-        if (txnId && txnId.trim() !== "") {
-          verifyTransaction(txnId.trim(), planName, amount, username, upiId);
-        } else {
-          alert("❌ Transaction not verified. Payment marked as cancelled.");
-          fetch("/store_data", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, plan: planName, amount, status: "Cancelled" }),
-          }).catch(() => {});
-        }
-      }, 1200);
+      wentToUpi = true;
     }
-  };
 
-  document.addEventListener("visibilitychange", visibilityHandler);
+    if (document.visibilityState === "visible") {
+      document.removeEventListener("visibilitychange", handleVisibility);
 
-  // Try launching UPI
-  openUpiLink(upiLink);
+      // Only after return ask info
+      askConfirmation(amount, planName, upiId);
+    }
+  }
 
-  // If UPI didn't launch (still visible), fallback to QR
+  document.addEventListener("visibilitychange", handleVisibility);
+
+  // --- Fallback if UPI app did not open ---
   setTimeout(() => {
-    if (!wentBackground) {
-      console.warn("UPI app likely didn't open. Showing QR fallback.");
-      alert("UPI app did not open automatically. Please scan QR to pay.");
-      openQrModal(upiLink, planName, amount);
-      document.removeEventListener("visibilitychange", visibilityHandler);
+    if (!wentToUpi) {
+      console.warn("UPI app did not open. Showing QR fallback instead.");
+      openQrFallback(upiLink, planName, amount);
+      document.removeEventListener("visibilitychange", handleVisibility);
     }
   }, 1500);
 }
 
 
-// 🔗 Better deep-link trigger than window.location
-function openUpiLink(upiLink) {
-  const a = document.createElement("a");
-  a.href = upiLink;
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+// ---------------------------
+// AFTER UPI RETURN
+// ---------------------------
+function askConfirmation(amount, planName, upiId) {
+
+  const username = prompt("Enter Your Name:");
+
+  if (!username) {
+    alert("Name required.");
+    return;
+  }
+
+  const txnId = prompt("Enter UPI Transaction ID shown in app:");
+
+  if (!txnId) {
+    alert("Payment NOT CONFIRMED.");
+    storeTxn(username, planName, amount, "Cancelled");
+    return;
+  }
+
+  storeTxn(username, planName, amount, "Pending");
+
+  // Generate receipt
+  verifyTransaction(txnId.trim(), planName, amount, username, upiId);
 }
 
 
-// 🏷️ QR Modal Reuse
-function openQrModal(upiLink, planName, amount) {
+// ---------------------------
+// STORE DB
+// ---------------------------
+function storeTxn(username, planName, amount, status) {
+  fetch("/store_data", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, plan: planName, amount, status }),
+  }).catch(() => {});
+}
+
+
+// ---------------------------
+// QR FALLBACK IF UPI DIDN'T OPEN
+// ---------------------------
+function openQrFallback(upiLink, planName, amount) {
   const qrImg = document.getElementById("upiQr");
-  const qrSection = document.getElementById("qrSection");
   const modal = document.getElementById("paymentModal");
+  const qrSection = document.getElementById("qrSection");
   const selectedPlan = document.getElementById("selectedPlan");
 
   selectedPlan.textContent = `${planName} - ₹${amount}`;
+
   qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
     upiLink
   )}`;
 
-  qrSection.classList.remove("hidden");
   modal.classList.remove("hidden");
+  qrSection.classList.remove("hidden");
 }
 
 
@@ -261,4 +273,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (storedLang !== "en") translatePage(storedLang);
 });
-
