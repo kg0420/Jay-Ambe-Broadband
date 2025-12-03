@@ -2,7 +2,6 @@
 
 {% block head %}
 <title>Jay Ambe Broadband Service</title>
-<meta name="robots" content="index, follow">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="https://kit.fontawesome.com/a2d9d6d3b6.js" crossorigin="anonymous"></script>
@@ -129,6 +128,9 @@
     </div>
     {% endfor %}
   </div>
+  
+
+
 </section>
 
 <!-- 💬 Feedback Section -->
@@ -155,7 +157,8 @@
   </form>
 </div>
 
-<!-- Flash Messages -->
+
+<!-- ✅ Flash Messages -->
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
   <div class="fixed bottom-6 right-6 z-50">
@@ -167,6 +170,124 @@
   </div>
   {% endif %}
 {% endwith %}
-{% endblock %}
+<!-- <select id="languageSelect"
+  class="bg-gray-800 text-white p-2 rounded fixed bottom-6 left-6 z-50 border border-cyan-500 shadow-lg">
+  <option value="en">English</option>
+  <option value="hi">हिंदी</option>
+  <option value="mr">मराठी</option>
+</select> -->
+
+<!-- 🧠 Translation Script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const langSelect = document.getElementById("languageSelect");
+  const storedLang = localStorage.getItem("siteLang") || "en";
+  langSelect.value = storedLang;
+
+  // ✅ Function: Translate a single text node
+  async function translateTextNode(el, lang) {
+    const original = el.textContent.trim();
+    if (!original) return;
+
+    if (!el.dataset.originalText) el.dataset.originalText = original;
+
+    if (lang === "en") {
+      el.textContent = el.dataset.originalText;
+      return;
+    }
+
+    try {
+      const res = await fetch("/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: original, lang })
+      });
+      const data = await res.json();
+      if (data.translated_text && data.translated_text !== original) {
+        el.textContent = data.translated_text;
+      }
+    } catch (e) {
+      console.error("❌ Translation error:", e);
+    }
+  }
+
+  // 🌍 Function: Translate entire page
+  async function translatePage(lang) {
+    localStorage.setItem("siteLang", lang);
+
+    const elements = document.querySelectorAll(
+      "h1, h2, h3, h4, h5, h6, p, li, span, label, div, strong, em, small"
+    );
+
+    const loader = document.createElement("div");
+    loader.innerText = "Translating...";
+    Object.assign(loader.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      background: "rgba(0,0,0,0.8)",
+      color: "white",
+      padding: "8px 20px",
+      borderRadius: "10px",
+      zIndex: "9999",
+      fontSize: "14px",
+      fontFamily: "Poppins, sans-serif"
+    });
+    document.body.appendChild(loader);
+
+    let count = 0;
+    for (const el of elements) {
+      const tag = el.tagName.toLowerCase();
+      if (["a", "button", "input", "textarea", "select"].includes(tag)) continue;
+      if (el.querySelector("i, svg, img")) continue;
+      const style = window.getComputedStyle(el);
+      if (style.display === "none") continue;
+
+      await translateTextNode(el, lang);
+      count++;
+    }
+
+    loader.innerText = `✅ Translated ${count} elements`;
+    setTimeout(() => loader.remove(), 2000);
+
+    // ✅ Reinitialize animations & rebind navbar
+    if (window.AOS) setTimeout(() => AOS.refresh(), 500);
+    rebindInteractiveElements();
+
+    // ✅ Re-enable Navbar links from base.html
+    if (typeof triggerNavRebind === "function") {
+      triggerNavRebind();
+    }
+  }
+
+  // ♻️ Rebind Navbar and Links
+  function rebindInteractiveElements() {
+    // ✅ Smooth scroll for anchor links (#contact)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.onclick = (e) => {
+        e.preventDefault();
+        const target = document.querySelector(anchor.getAttribute("href"));
+        if (target) target.scrollIntoView({ behavior: "smooth" });
+      };
+    });
+
+    // ✅ Ensure route navigation still works (Home / Plans)
+    document.querySelectorAll('a[href^="/"]').forEach(link => {
+      link.onclick = () => {
+        window.location.href = link.getAttribute("href");
+      };
+    });
+  }
+
+  // ✅ Language change listener
+  langSelect.addEventListener("change", (e) => translatePage(e.target.value));
+
+  // ✅ Auto-translate on reload
+  if (storedLang !== "en") translatePage(storedLang);
+});
+</script>
+
 <script src="static/scripts/script.js"></script>
 
+
+{% endblock %}
